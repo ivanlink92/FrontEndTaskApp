@@ -84,16 +84,32 @@ const Tasks = () => {
           });
       } else {
         // Add a new task
-        const response = await axios.post(
-          "https://back-end-task-app.vercel.app/api/tasks/",
-          { ...taskData, userId },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setTasks([...tasks, response.data]);
+        let data = JSON.stringify({
+          title: taskData.title,
+          description: taskData.description,
+          completed: taskData.completed,
+          user: userId,
+        });
+
+        let config = {
+          method: "post",
+          maxBodyLength: Infinity,
+          url: "https://back-end-task-app.vercel.app/api/tasks/",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+          },
+          data: data,
+        };
+
+        axios
+          .request(config)
+          .then((response) => {
+            fetchTasks();
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
 
       setShowForm(false);
