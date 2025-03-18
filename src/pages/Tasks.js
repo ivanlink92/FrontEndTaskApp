@@ -9,20 +9,33 @@ const Tasks = () => {
   const [tasks, setTasks] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState("");
+  const [taskToEdit, setTaskToEdit] = useState(null);
 
   // Fetch tasks from the API
   const fetchTasks = async () => {
     try {
       const token = localStorage.getItem("access");
-      const response = await axios.get(
-        "https://back-end-task-app.vercel.app/api/tasks/",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setTasks(response.data);
+
+      let data = "";
+
+      let config = {
+        method: "get",
+        maxBodyLength: Infinity,
+        url: "https://back-end-task-app.vercel.app/api/tasks/",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+        data: data,
+      };
+
+      axios
+        .request(config)
+        .then((response) => {
+          setTasks(response.data);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     } catch (err) {
       setError("Failed to fetch tasks. Please try again.");
       console.error("Fetch tasks error:", err);
@@ -30,27 +43,64 @@ const Tasks = () => {
   };
 
   // Add a new task
-  const addTask = async (newTask) => {
+  const handleTask = async (taskData) => {
     try {
       const token = localStorage.getItem("access");
-      const userid = localStorage.getItem("id");
-      newTask.user = userid;
-      console.log("task :", newTask);
-      const response = await axios.post(
-        "https://back-end-task-app.vercel.app/api/tasks/",
-        newTask,
-        {
+      const userId = localStorage.getItem("id");
+      if (taskToEdit) {
+        // Update the task
+        let data = JSON.stringify({
+          id: taskToEdit.id,
+          title: taskData.title,
+          description: taskData.description,
+          completed: taskData.completed,
+          user: userId,
+        });
+        console.log(data);
+        let config = {
+          method: "put",
+          maxBodyLength: Infinity,
+          url:
+            "https://back-end-task-app.vercel.app/api/tasks/" +
+            taskToEdit.id +
+            "/",
           headers: {
-            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
           },
-        }
-      );
-      setTasks([...tasks, response.data]);
-      console.log("Task added:", response.data);
+          data: data,
+        };
+        axios
+          .request(config)
+          .then((response) => {
+            setTasks(
+              tasks.map((task) =>
+                task.id === taskToEdit.id ? response.data : task
+              )
+            );
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      } else {
+        // Add a new task
+        const response = await axios.post(
+          "https://back-end-task-app.vercel.app/api/tasks/",
+          { ...taskData, userId },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setTasks([...tasks, response.data]);
+      }
+
       setShowForm(false);
+      setTaskToEdit(null);
     } catch (err) {
-      setError("Failed to add task. Please try again.");
-      console.error("Add task error:", err);
+      setError(taskToEdit ? "Failed to update task." : "Failed to add task.");
+      console.error(taskToEdit ? "Update task error:" : "Add task error:", err);
     }
   };
 
@@ -58,27 +108,35 @@ const Tasks = () => {
   useEffect(() => {
     fetchTasks();
   }, []);
-
   return (
     <div className="tasks-container">
       <h2>Your Tasks</h2>
       {error && <p className="error-message">{error}</p>}
-      {/* Add Task button */}
       <button onClick={() => setShowForm(true)}>Add Task</button>
-      {/* Pop-up modal for adding tasks */}
       {showForm && (
         <div className="modal-backdrop">
           <div className="modal">
             <TaskForm
-              addTask={addTask}
-              closeModal={() => setShowForm(false)} // Pass a function to close the modal
+              addTask={handleTask}
+              closeModal={() => {
+                setShowForm(false);
+                setTaskToEdit(null);
+              }}
+              taskToEdit={taskToEdit}
             />
           </div>
         </div>
       )}
       <div className="task-list">
         {tasks.map((task) => (
-          <Task key={task.id} task={task} />
+          <Task
+            key={task.id}
+            task={task}
+            onEdit={(task) => {
+              setTaskToEdit(task);
+              setShowForm(true);
+            }}
+          />
         ))}
       </div>
     </div>
