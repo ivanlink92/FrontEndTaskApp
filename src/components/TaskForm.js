@@ -1,19 +1,21 @@
 // src/components/TaskForm.js
 import React, { useState } from "react";
 
-const TaskForm = ({ addTask }) => {
+const TaskForm = ({ addTask, closeModal }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [completed, setCompleted] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    addTask({ title, description });
+    addTask({ completed, title, description });
     setTitle("");
     setDescription("");
   };
 
   return (
     <div className="task-form">
+      <h3>Add New Task</h3>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -28,7 +30,12 @@ const TaskForm = ({ addTask }) => {
           onChange={(e) => setDescription(e.target.value)}
           required
         />
-        <button type="submit">Add Task</button>
+        <div className="form-buttons">
+          <button type="submit">Add Task</button>
+          <button type="button" onClick={closeModal}>
+            Close
+          </button>
+        </div>
       </form>
     </div>
   );

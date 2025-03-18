@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "../styles/Login.css";
+import { jwtDecode } from "jwt-decode";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true); // Toggle between login and register
@@ -38,6 +39,8 @@ const AuthPage = () => {
         if (isLogin) {
           // Save the token to local storage for login
           localStorage.setItem("access", response.data.access);
+          localStorage.setItem("id", response.data.id);
+
           navigate("/tasks"); // Redirect to tasks page after login
         } else {
           // After registration, switch to login form
