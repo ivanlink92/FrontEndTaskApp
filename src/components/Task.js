@@ -1,7 +1,7 @@
 // src/components/Task.js
 import React from "react";
 
-const Task = ({ task, onEdit }) => {
+const Task = ({ task, onEdit, onDelete }) => {
   return (
     <div className="task">
       <h3>{task.title}</h3>
@@ -13,7 +13,9 @@ const Task = ({ task, onEdit }) => {
         <button className="edit-button" onClick={() => onEdit(task)}>
           Edit
         </button>
-        <button className="delete-button">Delete</button>
+        <button className="delete-button" onClick={() => onDelete(task.id)}>
+          Delete
+        </button>
       </div>
     </div>
   );
