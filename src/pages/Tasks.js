@@ -42,7 +42,7 @@ const Tasks = () => {
     }
   };
 
-  // Add a new task
+  // Add and update a new task
   const handleTask = async (taskData) => {
     try {
       const token = localStorage.getItem("access");
@@ -119,6 +119,44 @@ const Tasks = () => {
       console.error(taskToEdit ? "Update task error:" : "Add task error:", err);
     }
   };
+  const deleteTask = async (taskId) => {
+    const token = localStorage.getItem("access");
+    if (window.confirm("Are you sure you want to delete this task?")) {
+      let config = {
+        method: "delete",
+        maxBodyLength: Infinity,
+        url: "https://back-end-task-app.vercel.app/api/tasks/" + taskId + "/",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      };
+
+      axios
+        .request(config)
+        .then((response) => {
+          fetchTasks();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      //   try {
+      //     const token = localStorage.getItem("access");
+      //     await axios.delete(
+      //       `https://back-end-task-app.vercel.app/api/tasks/${taskId}`,
+      //       {
+      //         headers: {
+      //           Authorization: `Bearer ${token}`,
+      //         },
+      //       }
+      //     );
+      //     setTasks(tasks.filter((task) => task.id !== taskId)); // Remove the task from the list
+      //   } catch (err) {
+      //     setError("Failed to delete task. Please try again.");
+      //     console.error("Delete task error:", err);
+      //   }
+    }
+  };
 
   // Fetch tasks when the component mounts
   useEffect(() => {
@@ -152,6 +190,7 @@ const Tasks = () => {
               setTaskToEdit(task);
               setShowForm(true);
             }}
+            onDelete={deleteTask}
           />
         ))}
       </div>
