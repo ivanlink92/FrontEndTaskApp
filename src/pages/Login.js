@@ -37,7 +37,7 @@ const AuthPage = () => {
 
         if (isLogin) {
           // Save the token to local storage for login
-          localStorage.setItem("token", response.data.token);
+          localStorage.setItem("access", response.data.access);
           navigate("/tasks"); // Redirect to tasks page after login
         } else {
           // After registration, switch to login form
