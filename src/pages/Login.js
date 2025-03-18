@@ -1,10 +1,11 @@
-// src/pages/Login.js
+// src/pages/AuthPage.js
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import "../styles/Login.css";
 
-const Login = () => {
+const AuthPage = () => {
+  const [isLogin, setIsLogin] = useState(true); // Toggle between login and register
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -13,61 +14,60 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Prepare the login data
-    const loginData = {
+    const authData = {
       username: username,
       password: password,
     };
 
+    const endpoint = isLogin ? "/login/" : "/register/";
+    const url = `https://back-end-task-app.vercel.app/api${endpoint}`;
+
     try {
-      // Call the login API using Axios
-      const response = await axios.post(
-        "https://back-end-task-app.vercel.app/api/login/",
-        loginData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
+      const response = await axios.post(url, authData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.status === (isLogin ? 200 : 201)) {
+        console.log(
+          isLogin ? "Login successful" : "Registration successful:",
+          response.data
+        );
+
+        if (isLogin) {
+          // Save the token to local storage for login
+          localStorage.setItem("token", response.data.token);
+          navigate("/tasks"); // Redirect to tasks page after login
+        } else {
+          // After registration, switch to login form
+          setIsLogin(true);
+          setError("Registration successful. Please log in.");
         }
-      );
-
-      // If the request is successful
-      if (response.status === 200) {
-        console.log("Login successful:", response.data);
-
-        // Save the token to local storage (or cookies) for future requests
-        localStorage.setItem("token", response.data.token);
-
-        // Redirect to the tasks page
-        navigate("/tasks");
       }
     } catch (err) {
-      // Handle errors
       if (err.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
         setError(
-          err.response.data.message || "Login failed. Please try again."
+          err.response.data.message ||
+            (isLogin ? "Login failed." : "Registration failed.")
         );
       } else if (err.request) {
-        // The request was made but no response was received
         setError("No response from the server. Please try again.");
       } else {
-        // Something happened in setting up the request
         setError("An error occurred. Please try again.");
       }
-      console.error("Login error:", err);
+      console.error(isLogin ? "Login error:" : "Registration error:", err);
     }
   };
 
   return (
-    <div className="login-container">
-      <h2>Login</h2>
+    <div className="auth-container">
+      <h2>{isLogin ? "Login" : "Register"}</h2>
       {error && <p className="error-message">{error}</p>}
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="username"
+          placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
@@ -79,10 +79,22 @@ const Login = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit">Login</button>
+        <button type="submit">{isLogin ? "Login" : "Register"}</button>
       </form>
+      <p>
+        {isLogin ? "Don't have an account? " : "Already have an account? "}
+        <button
+          className="toggle-button"
+          onClick={() => {
+            setIsLogin(!isLogin);
+            setError(""); // Clear error message when toggling
+          }}
+        >
+          {isLogin ? "Register" : "Login"}
+        </button>
+      </p>
     </div>
   );
 };
 
-export default Login;
+export default AuthPage;
