@@ -9,7 +9,6 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Login />} />
       </Routes>
     </Router>
   );
