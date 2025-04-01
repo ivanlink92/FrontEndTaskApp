@@ -24,6 +24,7 @@ const AuthPage = () => {
     const url = `https://back-end-task-app.vercel.app/api${endpoint}`;
 
     try {
+
       const response = await axios.post(url, authData, {
         headers: {
           "Content-Type": "application/json",
@@ -40,7 +41,7 @@ const AuthPage = () => {
           // Save the token to local storage for login
           localStorage.setItem("access", response.data.access);
           localStorage.setItem("id", response.data.id);
-
+          
           navigate("/tasks"); // Redirect to tasks page after login
         } else {
           // After registration, switch to login form
@@ -59,7 +60,7 @@ const AuthPage = () => {
       } else {
         setError("An error occurred. Please try again.");
       }
-      console.error(isLogin ? "Login error:" : "Registration error:", err);
+      //console.error(isLogin ? "Login error:" : "Registration error:", err);
     }
   };
 
@@ -82,7 +83,7 @@ const AuthPage = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit">{isLogin ? "Login" : "Register"}</button>
+        <button title="btnSubmit" type="submit">{isLogin ? "Login" : "Register"}</button>
       </form>
       <p>
         {isLogin ? "Don't have an account? " : "Already have an account? "}
